@@ -1,11 +1,10 @@
-
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <string>
 
 using namespace std;
-
+//Queue
 template <typename T>  // создаем шаблонную структуру, которая может работать с любыми типами данных
 struct Queue {  // определяем структуру очереди
     struct Node {  // внутренний элемент структуры — узел
@@ -67,7 +66,7 @@ struct Queue {  // определяем структуру очереди
         }
     }
 };
-
+//Dinamic Arr
 // Пример структуры динамического массива
 struct DynamicArray {
     string* data;  // указатель на массив строк
@@ -137,7 +136,7 @@ struct DynamicArray {
         delete[] data;  // удаляем массив
     }
 };
-
+//Singl list
 // Определяем структуру для односвязного списка
 struct SinglyLinkedList {
     struct Node {  // узел списка
@@ -246,7 +245,7 @@ struct SinglyLinkedList {
         }
     }
 };
-
+//Stack
 // Определяем шаблонную структуру для стека
 template <typename T>
 struct Stack {
@@ -300,7 +299,7 @@ struct Stack {
         }
     }
 };
-
+//HashTable
 // Определяем структуру хэш-таблицы
 struct HashTable {
     struct Entry {  // внутренний элемент хэш-таблицы — запись
@@ -398,6 +397,7 @@ struct HashTable {
         }
     }
 };
+//Set
 // Структура для множества (Set)
 struct Set {
     HashTable htable;  // используем хэш-таблицу для хранения элементов множества
@@ -426,7 +426,7 @@ struct Set {
         cout << "}" << endl;  // закрываем вывод множества
     }
 };
-
+// Binary tree
 // Структура для полного бинарного дерева (Complete Binary Tree)
 struct CompleteBinaryTree {
     struct Node {  // внутренний элемент дерева — узел
@@ -470,14 +470,14 @@ struct CompleteBinaryTree {
         }
     }
     bool search(const string& value) const {
-        if (!root) return false;
+        if (!root) return false;// проверка на пустоты дерева
         Queue<Node*> q;
-        q.push(root);
-        while (!q.empty()) {
+        q.push(root); // закидываю корень дерева для обхода 
+        while (!q.empty()) {// выполнять пока очередь не опустеет
             Node* current = q.pop();
-            if (current->value == value) return true;
-            if (current->left) q.push(current->left);
-            if (current->right) q.push(current->right);
+            if (current->value == value) return true;//если нашел
+            if (current->left) q.push(current->left);//если у текущего узла есть левый или
+            if (current->right) q.push(current->right);//правый дочь узел они добовляються для дальнейшего обхода
         }
         return false;
     }
