@@ -126,7 +126,7 @@ struct DynamicArray {
     }
 
     void print() const {  // метод для печати всех элементов массива
-        for (int i = 0; i < count; ++i) {  // проходим по всем элементам
+        for (int i = 0; i < count; ++i) {  // проходим по всем элементам 
             cout << data[i] << " ";  // выводим каждый элемент
         }
         cout << endl;
@@ -1643,8 +1643,8 @@ void save_to_file(const string& filename,
         // Выполняем уровневый обход и сохраняем вставки
         // Для восстановления дерева достаточно сохранить команды CBINSERT в порядке уровней
         // Используем очередь для обхода
-        Queue<CompleteBinaryTree::Node*> q;
-        if (current_tree->tree->root) {
+        Queue<CompleteBinaryTree::Node*> q;// создаю очередь для обхода дерева
+        if (current_tree->tree->root) {// если корень существует до в очередь ее
             q.push(current_tree->tree->root);
         }
         while (!q.empty()) {
