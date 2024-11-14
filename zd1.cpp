@@ -2,8 +2,38 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include "list.h"
+#include <stdexcept>
+#include <iomanip>
 
 using namespace std;
+
+
+
+string Fulltext (string& filename, string& nameStruct) { // ф-ия сохранения фулл текста файла без нужной структуры
+    string str, textfull;
+    ifstream fileinput;
+    fileinput.open(filename);
+    while(getline(fileinput, str)) { // сохранение фулл текста в переменную
+        stringstream ss(str);
+        string token;
+        getline(ss, token, ' ');
+        if (token != nameStruct) {
+            textfull += str + "\n";
+        }
+    }
+    fileinput.close();
+    return textfull;
+}
+void writefile (string& filename, string& textfull) { // ф-ия записи данных в файл
+    ofstream fileoutput;
+    fileoutput.open(filename);
+    fileoutput << textfull;
+    fileoutput.close();
+}
+
+
+
 //Queue
 template <typename T>  // создаем шаблонную структуру, которая может работать с любыми типами данных
 struct Queue {  // определяем структуру очереди
@@ -138,113 +168,291 @@ struct DynamicArray {
 };
 //Singl list
 // Определяем структуру для односвязного списка
-struct SinglyLinkedList {
-    struct Node {  // узел списка
-        string value;  // значение, хранящееся в узле
-        Node* next;    // указатель на следующий узел
-        Node(const string& val) : value(val), next(nullptr) {}  // конструктор узла
-    };
-
-    Node* head;  // указатель на первый элемент списка
-
-    SinglyLinkedList() : head(nullptr) {}  // конструктор, инициализирующий пустой список
-
-    void push_front(const string& value) {  // метод для добавления элемента в начало списка
-        Node* newNode = new Node(value);  // создаем новый узел
-        newNode->next = head;  // новый узел указывает на текущий первый элемент списка
-        head = newNode;  // обновляем указатель на первый элемент
-    }
-
-    string pop_front() {  // метод для удаления первого элемента из списка и возвращения его значения
-        if (!head) return "";  // если список пуст, возвращаем пустую строку
-        Node* temp = head;  // временно сохраняем указатель на текущий первый элемент
-        string value = head->value;  // сохраняем значение текущего первого узла
-        head = head->next;  // перемещаем указатель на следующий узел
-        delete temp;  // освобождаем память удаленного узла
-        return value;  // возвращаем значение удаленного узла
-    }
-    string pop_back() {
-    if (!head) return "";
-    if (!head->next) {
-        string value = head->value;
-        delete head;
-        head = nullptr;
-        return value;
-    }
-    Node* current = head;
-    while (current->next->next) {
-        current = current->next;
-    }
-        string value = current->next->value;
-        delete current->next;
-        current->next = nullptr;
-        return value;
-    }
-    string get(int index) const {  // метод для получения значения по индексу
-        Node* current = head;  // начинаем с первого узла
-        int current_index = 0;  // счетчик для текущего индекса
-        while (current && current_index < index) {  // перемещаемся по списку, пока не достигнем нужного индекса
-            current = current->next;
-            current_index++;
-        }
-        if (current && current_index == index) {  // если узел найден на нужном индексе
-            return current->value;  // возвращаем значение узла
-        }
-        return "";  // если индекс выходит за границы списка, возвращаем пустую строку
-    }
-
-    void print() const {  // метод для печати всех элементов списка
-        Node* current = head;  // начинаем с первого узла
-        while (current) {  // пока есть узлы
-            cout << current->value << " ";  // выводим значение текущего узла
-            current = current->next;  // переходим к следующему узлу
-        }
-        cout << endl;
-    }
-    void remove_by_value(const string& value) {
-    if (!head) return;
-    if (head->value == value) {
-        pop_front();
-        return;
-    }
-    Node* current = head;
-    while (current->next && current->next->value != value) {
-        current = current->next;
-    }
-    if (current->next) {
-        Node* temp = current->next;
-        current->next = current->next->next;
-        delete temp;
-        }
-    }
-    void push_back(const string& value) {
-        Node* newNode = new Node(value);
-        if (!head) {
-            head = newNode;
-            return;
-        }
-        Node* current = head;
-        while (current->next) {
-            current = current->next;
-        }
-        current->next = newNode;
-    }
-    bool find_by_value(const string& value) const {
-        Node* current = head;
-        while (current) {
-            if (current->value == value) {
-                return true;
+SinglyLinkedList<string> LSreadfile(string& filename, string& name) { // ф-ия чтения списка из файла
+    SinglyLinkedList<string> nums;
+    string str;
+    ifstream fileinput;
+    fileinput.open(filename);
+    while (getline(fileinput, str)) { // добавления значения в массив
+        stringstream ss(str);
+        string token;
+        getline(ss, token, ' ');
+        if (token == name) {
+            while (getline(ss, token, ' ')) {
+                nums.push_back(token);
             }
-            current = current->next;
-        }
-        return false;
-    }
-    ~SinglyLinkedList() {  // деструктор для очистки памяти
-        while (head) {  // пока в списке есть элементы
-            pop_front();  // удаляем первый элемент
         }
     }
-};
+    fileinput.close();
+    return nums;
+}
+void LSPUSH(string& name, string& value, string& filename, string check) {
+    string textfull = Fulltext(filename, name);
+    SinglyLinkedList<string> nums = LSreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (check == "back") nums.push_back(value);
+        else nums.push_front(value);
+        str = name + ' ';
+        for (int i = 0; i < nums.size; ++i) {
+            str += nums.getvalue(i) + ' ';
+        }
+        textfull += str;
+        writefile(filename, textfull);
+    } else { // создание списка, если его нет
+        str = name + ' ' + value;
+        textfull += str;
+        writefile(filename, textfull);
+    }
+}
+void LSPOP(string& name, string& filename, string check) {
+    string textfull = Fulltext(filename, name);
+    SinglyLinkedList<string> nums = LSreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (check == "back") nums.pop_back();
+        else nums.pop_front();
+        str = name + ' ';
+        for (int i = 0; i < nums.size; ++i) {
+            str += nums.getvalue(i) + ' ';
+        }
+        textfull += str;
+        writefile(filename, textfull);
+    } else {
+        cout << "Ошибка, нет такого списка или он пуст!" << endl;
+        exit(1);
+    }
+}
+void LSREMOVE(string& name, string& value, string& filename) {
+    string textfull = Fulltext(filename, name);
+    SinglyLinkedList<string> nums = LSreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (nums.remove(value)) {
+            str = name + ' ';
+            for (int i = 0; i < nums.size; ++i) {
+                str += nums.getvalue(i) + ' ';
+            }
+            textfull += str;
+            writefile(filename, textfull);
+        } else {
+            cout << "Ошибка, такой элемент в списке не найден!" << endl;
+            exit(1);
+        }
+    } else {
+        cout << "Ошибка, нет такого списка или он пуст!" << endl;
+        exit(1);
+    }
+}
+void LSGET(string& name, string& value, string& filename) {
+    SinglyLinkedList<string> nums = LSreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (nums.getindex(value) == -1) {
+            cout << "Нет такого значения в списке!" << endl;
+            exit(1);
+        }
+        cout << nums.getindex(value) << endl;
+    } else {
+        cout << "Ошибка, нет такого списка!" << endl;
+        exit(1);
+    }
+}
+void LSPRINT(string& name, string& filename) {
+    SinglyLinkedList<string> nums = LSreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        nums.print();
+    } else {
+        cout << "Ошибка, нет такого списка или он пуст!" << endl;
+        exit(1);
+    }
+}
+void LSprocessing(string& command, string& filename) { // ф-ия обработки команд списка
+    string name, value;
+
+    if (command.substr(0, 8) == "LSPUSHB ") {
+        stringstream stream(command.substr(8));;
+        stream >> name >> value;
+        LSPUSH(name, value, filename, "back"); 
+    } else if (command.substr(0, 8) == "LSPUSHF ") {
+        stringstream stream(command.substr(8));;
+        stream >> name >> value;
+        LSPUSH(name, value, filename, "front");
+    } else if (command.substr(0, 7) == "LSPOPB ") {
+        stringstream stream(command.substr(7));;
+        stream >> name;
+        LSPOP(name, filename, "back");
+    } else if (command.substr(0, 7) == "LSPOPF ") {
+        stringstream stream(command.substr(7));;
+        stream >> name;
+        LSPOP(name, filename, "front");
+    } else if (command.substr(0, 9) == "LSREMOVE") {
+        stringstream stream(command.substr(9));;
+        stream >> name >> value;
+        LSREMOVE(name, value, filename);
+    } else if (command.substr(0, 6) == "LSGET ") {
+        stringstream stream(command.substr(6));;
+        stream >> name >> value;
+        LSGET(name, value, filename);
+    } else if (command.substr(0, 8) == "LSPRINT ") {
+        stringstream stream(command.substr(8));;
+        stream >> name;
+        LSPRINT(name, filename);
+    } else {
+        cout << "Ошибка, нет такой команды!" << endl;
+        exit(1); 
+    }
+}
+
+// Дабл лист
+DoublyLinkedList<string> LDreadfile(string& filename, string& name) { // ф-ия чтения списка из файла
+    DoublyLinkedList<string> nums;
+    string str;
+    ifstream fileinput;
+    fileinput.open(filename);
+    while (getline(fileinput, str)) { // добавления значения в массив
+        stringstream ss(str);
+        string token;
+        getline(ss, token, ' ');
+        if (token == name) {
+            while (getline(ss, token, ' ')) {
+                nums.push_back(token);
+            }
+        }
+    }
+    fileinput.close();
+    return nums;
+}
+void LDPUSH(string& name, string& value, string& filename, string check) {
+    string textfull = Fulltext(filename, name);
+    DoublyLinkedList<string> nums = LDreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (check == "back") nums.push_back(value);
+        else nums.push_front(value);
+        str = name + ' ';
+        for (int i = 0; i < nums.size; ++i) {
+            str += nums.getvalue(i) + ' ';
+        }
+        textfull += str;
+        writefile(filename, textfull);
+    } else { // создание списка, если его нет
+        str = name + ' ' + value;
+        textfull += str;
+        writefile(filename, textfull);
+    }
+}
+void LDPOP(string& name, string& filename, string check) {
+    string textfull = Fulltext(filename, name);
+    DoublyLinkedList<string> nums = LDreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (check == "back") nums.pop_back();
+        else nums.pop_front();
+        str = name + ' ';
+        for (int i = 0; i < nums.size; ++i) {
+            str += nums.getvalue(i) + ' ';
+        }
+        textfull += str;
+        writefile(filename, textfull);
+    } else {
+        cout << "Ошибка, нет такого списка или он пуст!" << endl;
+        exit(1);
+    }
+}
+void LDREMOVE(string& name, string& value, string& filename) {
+    string textfull = Fulltext(filename, name);
+    DoublyLinkedList<string> nums = LDreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (nums.remove(value)) {
+            str = name + ' ';
+            for (int i = 0; i < nums.size; ++i) {
+                str += nums.getvalue(i) + ' ';
+            }
+            textfull += str;
+            writefile(filename, textfull);
+        } else {
+            cout << "Ошибка, такой элемент в списке не найден!" << endl;
+            exit(1);
+        }
+    } else {
+        cout << "Ошибка, нет такого списка или он пуст!" << endl;
+        exit(1);
+    }
+}
+void LDGET(string& name, string& value, string& filename) {
+    DoublyLinkedList<string> nums = LDreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (nums.getindex(value) == -1) {
+            cout << "Нет такого значения в списке!" << endl;
+            exit(1);
+        }
+        cout << nums.getindex(value) << endl;
+    } else {
+        cout << "Ошибка, нет такого списка!" << endl;
+        exit(1);
+    }
+}
+void LDPRINT(string& name, string& filename) {
+    DoublyLinkedList<string> nums = LDreadfile(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        nums.print();
+    } else {
+        cout << "Ошибка, нет такого списка или он пуст!" << endl;
+        exit(1);
+    }
+}
+void LDprocessing(string& command, string& filename) { // ф-ия обработки команд списка
+    string name, value;
+
+    if (command.substr(0, 8) == "LDPUSHB ") { //добавление в начало 
+        stringstream stream(command.substr(8));;
+        stream >> name >> value;
+        LDPUSH(name, value, filename, "back"); 
+    } else if (command.substr(0, 8) == "LDPUSHF ") {//добавление в конец
+        stringstream stream(command.substr(8));;
+        stream >> name >> value;
+        LDPUSH(name, value, filename, "front");
+    } else if (command.substr(0, 7) == "LDPOPB ") {//удаление с конца
+        stringstream stream(command.substr(7));;
+        stream >> name;
+        LDPOP(name, filename, "back");
+    } else if (command.substr(0, 7) == "LDPOPF ") {//удаление с  начало
+        stringstream stream(command.substr(7));;
+        stream >> name;
+        LDPOP(name, filename, "front");
+    } else if (command.substr(0, 9) == "LDREMOVE ") {//удаление по значению
+        stringstream stream(command.substr(9));;
+        stream >> name >> value;
+        LDREMOVE(name, value, filename);
+    } else if (command.substr(0, 6) == "LDGET ") {//
+        stringstream stream(command.substr(6));;
+        stream >> name >> value;
+        LDGET(name, value, filename);
+    } else if (command.substr(0, 8) == "LDPRINT ") {//вывод всех
+        stringstream stream(command.substr(8));;
+        stream >> name;
+        LDPRINT(name, filename);
+    } else {
+        cout << " нет такой команды!" << endl;
+        exit(1); 
+    }
+}
+
 //Stack
 // Определяем шаблонную структуру для стека
 template <typename T>
@@ -601,15 +809,6 @@ struct NamedSet {  // для множества
 
     NamedSet(const string& n) : name(n), set(new Set()), next(nullptr) {}
 };
-
-struct NamedLinkedList {  // для односвязного списка
-    string name;
-    SinglyLinkedList* list;
-    NamedLinkedList* next;
-
-    NamedLinkedList(const string& n) : name(n), list(new SinglyLinkedList()), next(nullptr) {}
-};
-
 struct NamedDynamicArrayStruct {  // для динамического массива
     string name;
     DynamicArray* array;
@@ -766,39 +965,7 @@ struct NamedSetList {
     }
 };
 
-// Структура для списка именованных односвязных списков
-struct NamedLinkedListList {
-    NamedLinkedList* head;  // указатель на первый список в списке
 
-    NamedLinkedListList() : head(nullptr) {}  // конструктор, инициализирующий пустой список
-
-    SinglyLinkedList* get(const string& name) const {  // метод для получения списка по имени
-        NamedLinkedList* current = head;  // начинаем с первого списка
-        while (current) {  // проходим по всем спискам в списке
-            if (current->name == name) return current->list;  // если найден список с нужным именем, возвращаем его
-            current = current->next;  // переходим к следующему списку
-        }
-        return nullptr;  // если список не найден, возвращаем nullptr
-    }
-
-    SinglyLinkedList* create(const string& name) {  // метод для создания нового списка с заданным именем
-        SinglyLinkedList* existing = get(name);  // проверяем, существует ли список с таким именем
-        if (existing) return existing;  // если существует, возвращаем его
-        NamedLinkedList* newNode = new NamedLinkedList(name);  // создаем новый список
-        newNode->next = head;  // вставляем его в начало списка
-        head = newNode;  // обновляем указатель на голову списка
-        return newNode->list;  // возвращаем новый список
-    }
-    ~NamedLinkedListList() {  // деструктор для освобождения памяти
-        NamedLinkedList* current = head;
-        while (current) {  // проходим по списку списков
-            NamedLinkedList* temp = current;
-            current = current->next;
-            delete temp->list;  // удаляем каждый список
-            delete temp;  // удаляем узел
-        }
-    }
-};
 
 // Структура для списка именованных динамических массивов
 struct NamedDynamicArrayList {
@@ -933,7 +1100,7 @@ void process_query(const string& query,
                    NamedStackList& stacks,
                    NamedQueueList& queues,
                    NamedSetList& sets,
-                   NamedLinkedListList& linked_lists,
+                  
                    NamedDynamicArrayList& dynamic_arrays,
                    NamedCompleteBinaryTreeList& trees) {
     TokenArray tokens = tokenize(query);  // разбиваем запрос на токены
@@ -978,13 +1145,7 @@ void process_query(const string& query,
             return;
         }
 
-        // Проверка и вывод для односвязного списка
-        SinglyLinkedList* list = linked_lists.get(structure_name);
-        if (list) {
-            list->print();
-            return;
-        }
-
+        
         // Проверка и вывод для динамического массива
         DynamicArray* array = dynamic_arrays.get(structure_name);
         if (array) {
@@ -1201,114 +1362,6 @@ void process_query(const string& query,
         }
         cout << "}" << endl;
     }
-    // Команды для Односвязного Списка
-    else if (command == "LPUSH") {
-        if (tokens.count != 3) {
-            cout << "Usage: LPUSH list_name value" << endl;
-            return;
-        }
-        string list_name = tokens.tokens[1];
-        string value = tokens.tokens[2];
-        SinglyLinkedList* list = linked_lists.create(list_name);
-        list->push_front(value);
-        cout << "LPUSH executed: Pushed '" << value << "' to front of list '" << list_name << "'" << endl;
-    }
-    else if (command == "LPUSHBACK") {
-    if (tokens.count != 3) {
-        cout << "Usage: LPUSHBACK list_name value" << endl;
-        return;
-    }
-        string list_name = tokens.tokens[1];
-        string value = tokens.tokens[2];
-        SinglyLinkedList* list = linked_lists.create(list_name);
-        list->push_back(value);
-        cout << "LPUSHBACK executed: Pushed '" << value << "' to back of list '" << list_name << "'" << endl;
-    }
-    else if (command == "LPOPBACK") {
-    if (tokens.count != 2) {
-        cout << "Usage: LPOPBACK list_name" << endl;
-        return;
-    }
-        string list_name = tokens.tokens[1];
-        SinglyLinkedList* list = linked_lists.get(list_name);
-    if (!list || !list->head) {
-        cout << "List '" << list_name << "' is empty or does not exist." << endl;
-        return;
-    }
-        string value = list->pop_back();
-        cout << "LPOPBACK executed: Popped '" << value << "' from back of list '" << list_name << "'" << endl;
-    }
-    else if (command == "LPOP") {
-        if (tokens.count != 2) {
-            cout << "Usage: LPOP list_name" << endl;
-            return;
-        }
-        string list_name = tokens.tokens[1];
-        SinglyLinkedList* list = linked_lists.get(list_name);
-        if (!list || !list->head) {
-            cout << "List '" << list_name << "' is empty or does not exist." << endl;
-            return;
-        }
-        string value = list->pop_front();
-        cout << "LPOP executed: Popped '" << value << "' from front of list '" << list_name << "'" << endl;
-    }
-    else if (command == "LREMOVE") {
-    if (tokens.count != 3) {
-        cout << "Usage: LREMOVE list_name value" << endl;
-        return;
-    }
-        string list_name = tokens.tokens[1];
-        string value = tokens.tokens[2];
-        SinglyLinkedList* list = linked_lists.get(list_name);
-    if (!list) {
-        cout << "List '" << list_name << "' does not exist." << endl;
-        return;
-    }
-        list->remove_by_value(value);
-        cout << "LREMOVE executed: Removed '" << value << "' from list '" << list_name << "'" << endl;
-    }
-    else if (command == "LSEARCH") {
-    if (tokens.count != 3) {
-        cout << "Usage: LSEARCH list_name value" << endl;
-        return;
-    }
-    string list_name = tokens.tokens[1];
-    string value = tokens.tokens[2];
-    SinglyLinkedList* list = linked_lists.get(list_name);
-    if (!list) {
-        cout << "List '" << list_name << "' does not exist." << endl;
-        return;
-    }
-        bool found = list->find_by_value(value);
-        cout << (found ? "TRUE" : "FALSE") << endl;
-    }
-    else if (command == "LGET") {
-        if (tokens.count != 3) {
-            cout << "Usage: LGET list_name index" << endl;
-            return;
-        }
-        string list_name = tokens.tokens[1];
-        int index;
-        try {
-            index = stoi(tokens.tokens[2]);
-        }
-        catch (...) {
-            cout << "Invalid index." << endl;
-            return;
-        }
-        SinglyLinkedList* list = linked_lists.get(list_name);
-        if (!list) {
-            cout << "List '" << list_name << "' does not exist." << endl;
-            return;
-        }
-        string value = list->get(index);
-        if (value.empty()) {
-            cout << "Index out of range." << endl;
-        }
-        else {
-            cout << value << endl;
-        }
-    }
     // Команды для Динамического Масссива
     else if (command == "AADD") {
         if (tokens.count != 3) {
@@ -1504,12 +1557,7 @@ void process_query(const string& query,
         return;
     }
 
-    // Проверка для односвязного списка
-    SinglyLinkedList* list = linked_lists.get(structure_name);
-    if (list) {
-        list->print();
-        return;
-    }
+ 
 
     // Проверка для динамического массива
     DynamicArray* array = dynamic_arrays.get(structure_name);
@@ -1534,7 +1582,6 @@ void save_to_file(const string& filename,
                   const NamedStackList& stacks,
                   const NamedQueueList& queues,
                   const NamedSetList& sets,
-                  const NamedLinkedListList& linked_lists,
                   const NamedDynamicArrayList& dynamic_arrays,
                   const NamedCompleteBinaryTreeList& trees) {
     ofstream ofs(filename);
@@ -1606,26 +1653,6 @@ void save_to_file(const string& filename,
         }
         current_set = current_set->next;
     }
-    // Сохранение Односвязных Списков
-    ofs << "# LinkedLists\n";
-    NamedLinkedList* current_list = linked_lists.head;
-    while (current_list) {
-        SinglyLinkedList* list = current_list->list;
-        SinglyLinkedList::Node* node = list->head;
-        // Сохраняем элементы списка с помощью LPUSH (обратный порядок)
-        // Чтобы сохранить исходный порядок, используем временный стек
-        Stack<string> temp_stack;
-        while (node) {
-            temp_stack.push(node->value);
-            node = node->next;
-        }
-        // Теперь сохраняем элементы в обратном порядке
-        while (!temp_stack.empty()) {
-            string val = temp_stack.pop();
-            ofs << "LPUSH " << current_list->name << " " << val << "\n";
-        }
-        current_list = current_list->next;
-    }
     // Сохранение Динамических Массивов
     ofs << "# DynamicArrays\n";
     NamedDynamicArrayStruct* current_array = dynamic_arrays.head;
@@ -1664,8 +1691,7 @@ void load_from_file(const string& filename,
                     NamedHashTableList& hash_tables,
                     NamedStackList& stacks,
                     NamedQueueList& queues,
-                    NamedSetList& sets,
-                    NamedLinkedListList& linked_lists,
+                    NamedSetList& sets,                 
                     NamedDynamicArrayList& dynamic_arrays,
                     NamedCompleteBinaryTreeList& trees) {
     ifstream ifs(filename);
@@ -1745,11 +1771,7 @@ void load_from_file(const string& filename,
             continue;
         }
         else if (command == "LPUSH") {
-            if (tokens.count != 3) continue;
-            string list_name = tokens.tokens[1];
-            string value = tokens.tokens[2];
-            SinglyLinkedList* list = linked_lists.create(list_name);
-            list->push_front(value);
+            continue;
         }
         else if (command == "LPOP") {
             // Пропускаем, аналогично SPOP
@@ -1795,40 +1817,192 @@ void load_from_file(const string& filename,
     ifs.close();
     cout << "Данные успешно загружены из файла: " << filename << endl;
 }
+//дабл лист
+
+// Сингл лист
+SinglyLinkedList<string> LSreadfileT(string& filename, string& name) { // ф-ия чтения списка из файла
+    SinglyLinkedList<string> nums;
+    string str;
+    ifstream fileinput;
+    fileinput.open(filename);
+    while (getline(fileinput, str)) { // добавления значения в массив
+        stringstream ss(str);
+        string token;
+        getline(ss, token, ' ');
+        if (token == name) {
+            while (getline(ss, token, ' ')) {
+                nums.push_back(token);
+            }
+        }
+    }
+    fileinput.close();
+    return nums;
+}
+void LSPUSHH(string& name, string& value, string& filename, string check) {
+    string textfull = Fulltext(filename, name);
+    SinglyLinkedList<string> nums = LSreadfileT(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (check == "back") nums.push_back(value);
+        else nums.push_front(value);
+        str = name + ' ';
+        for (int i = 0; i < nums.size; ++i) {
+            str += nums.getvalue(i) + ' ';
+        }
+        textfull += str;
+        writefile(filename, textfull);
+    } else { // создание списка, если его нет
+        str = name + ' ' + value;
+        textfull += str;
+        writefile(filename, textfull);
+    }
+}
+void LSPOPH(string& name, string& filename, string check) {
+    string textfull = Fulltext(filename, name);
+    SinglyLinkedList<string> nums = LSreadfileT(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (check == "back") nums.pop_back();
+        else nums.pop_front();
+        str = name + ' ';
+        for (int i = 0; i < nums.size; ++i) {
+            str += nums.getvalue(i) + ' ';
+        }
+        textfull += str;
+        writefile(filename, textfull);
+    } else {
+        cout << "Ошибка, нет такого списка или он пуст!" << endl;
+        exit(1);
+    }
+}
+void LSREMOVEH(string& name, string& value, string& filename) {
+    string textfull = Fulltext(filename, name);
+    SinglyLinkedList<string> nums = LSreadfileT(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (nums.remove(value)) {
+            str = name + ' ';
+            for (int i = 0; i < nums.size; ++i) {
+                str += nums.getvalue(i) + ' ';
+            }
+            textfull += str;
+            writefile(filename, textfull);
+        } else {
+            cout << "Ошибка, такой элемент в списке не найден!" << endl;
+            exit(1);
+        }
+    } else {
+        cout << "Ошибка, нет такого списка или он пуст!" << endl;
+        exit(1);
+    }
+}
+void LSGETT(string& name, string& value, string& filename) {
+    SinglyLinkedList<string> nums = LSreadfileT(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        if (nums.getindex(value) == -1) {
+            cout << "Нет такого значения в списке!" << endl;
+            exit(1);
+        }
+        cout << nums.getindex(value) << endl;
+    } else {
+        cout << "Ошибка, нет такого списка!" << endl;
+        exit(1);
+    }
+}
+void LSPRINTT(string& name, string& filename) {
+    SinglyLinkedList<string> nums = LSreadfileT(filename, name);
+
+    string str;
+    if (nums.size != 0) {
+        nums.print();
+    } else {
+        cout << "Ошибка, нет такого списка или он пуст!" << endl;
+        exit(1);
+    }
+}
+
+
+
 
 int main(int argc, char* argv[]) {
-    if (argc < 5) {
-        cout << "Usage: ./dbms --file file.data --query 'QUERY'" << endl;
-        return 1;
-    }
+    /*
+    cout <<"2нужен  лист "<< endl;
+int n;
+    cin >> n;
+    if(n=1)*/ 
+    /*{
 
-    string file_option = argv[1];
-    string file = argv[2];
-    string query_option = argv[3];
-    string query = argv[4];
+        if (argc < 5) {
+            cout << "Usage: ./dbms --file file.data --query 'QUERY'" << endl;
+            return 1;
+        }
 
-    if (file_option != "--file" || query_option != "--query") {
-        cout << "Invalid arguments." << endl;
-        cout << "Usage: ./dbms --file file.data --query 'QUERY'" << endl;
-        return 1;
-    }
+        string file_option = argv[1];
+        string file = argv[2];
+        string query_option = argv[3];
+        string query = argv[4];
 
-    NamedHashTableList hash_tables;
-    NamedStackList stacks;
-    NamedQueueList queues;
-    NamedSetList sets;
-    NamedLinkedListList linked_lists;
-    NamedDynamicArrayList dynamic_arrays;
-    NamedCompleteBinaryTreeList trees;
+        if (file_option != "--file" || query_option != "--query") {
+            cout << "Invalid arguments." << endl;
+            cout << "Usage: ./dbms --file file.data --query 'QUERY'" << endl;
+            return 1;
+        }
 
-    // Загрузка данных из файла
-    load_from_file(file, hash_tables, stacks, queues, sets, linked_lists, dynamic_arrays, trees);
+        NamedHashTableList hash_tables;
+        NamedStackList stacks;
+        NamedQueueList queues;
+        NamedSetList sets;
+    
+        NamedDynamicArrayList dynamic_arrays;
+        NamedCompleteBinaryTreeList trees;
+
+        // Загрузка данных из файла
+        load_from_file(file, hash_tables, stacks, queues, sets, dynamic_arrays, trees);
+
+        // Обработка команды
+        process_query(query, hash_tables, stacks, queues, sets, dynamic_arrays, trees);
+
+        // Сохранение данных в файл
+        save_to_file(file, hash_tables, stacks, queues, sets, dynamic_arrays, trees);
+
+        return 0;
+    }*/
+    
+    {
+            if (argc != 5) {
+            cerr << "Использование: " << argv[0] << " --file <filename> --query '<command>'" << endl;
+            return 1;
+        }
+
+    // Разбор аргументов командной строки
+    string filename;
+    string query;
+    for (int i = 1; i < argc; i++) 
+        {
+            if (string(argv[i]) == "--file") {
+                filename = argv[++i];
+            } else if (string(argv[i]) == "--query") {
+                query = argv[++i];
+            }
+        }
 
     // Обработка команды
-    process_query(query, hash_tables, stacks, queues, sets, linked_lists, dynamic_arrays, trees);
-
-    // Сохранение данных в файл
-    save_to_file(file, hash_tables, stacks, queues, sets, linked_lists, dynamic_arrays, trees);
+    string name;
+    int value, index;
+    if (query.substr(0, 2) == "LD") { // Список
+        LDprocessing(query, filename);
+    } else {
+        cout << "Ошибка, неизвестная принадлежность структуры данных!" << endl;
+        return 1;
+    }
 
     return 0;
+    }
+
+    
 }
