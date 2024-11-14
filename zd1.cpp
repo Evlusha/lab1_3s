@@ -245,141 +245,6 @@ struct SinglyLinkedList {
         }
     }
 };
-// Структура узла двусвязного списка
-struct DoublyLinkedList {
-    struct Node {
-        string value; // значение узла
-        Node* next;   // указатель на следующий узел
-        Node* prev;   // указатель на предыдущий узел
-
-        Node(const string& val) : value(val), next(nullptr), prev(nullptr) {}
-    };
-
-    Node* head; // указатель на первый элемент списка
-    Node* tail; // указатель на последний элемент списка
-
-    DoublyLinkedList() : head(nullptr), tail(nullptr) {}
-
-    // Метод для добавления элемента в начало списка
-    void push_front(const string& value) {
-        Node* newNode = new Node(value);
-        newNode->next = head;
-        if (head) {
-            head->prev = newNode;
-        }
-        head = newNode;
-        if (!tail) {
-            tail = newNode;
-        }
-    }
-
-    // Метод для добавления элемента в конец списка
-    void push_back(const string& value) {
-        Node* newNode = new Node(value);
-        newNode->prev = tail;
-        if (tail) {
-            tail->next = newNode;
-        }
-        tail = newNode;
-        if (!head) {
-            head = newNode;
-        }
-    }
-
-    // Метод для удаления первого элемента из списка и возврата его значения
-    string pop_front() {
-        if (!head) return "";
-        Node* temp = head;
-        string value = head->value;
-        head = head->next;
-        if (head) {
-            head->prev = nullptr;
-        } else {
-            tail = nullptr;
-        }
-        delete temp;
-        return value;
-    }
-
-    // Метод для удаления последнего элемента из списка и возврата его значения
-    string pop_back() {
-        if (!tail) return "";
-        Node* temp = tail;
-        string value = tail->value;
-        tail = tail->prev;
-        if (tail) {
-            tail->next = nullptr;
-        } else {
-            head = nullptr;
-        }
-        delete temp;
-        return value;
-    }
-
-    // Метод для получения значения по индексу
-    string get(int index) const {
-        Node* current = head;
-        int currentIndex = 0;
-        while (current && currentIndex < index) {
-            current = current->next;
-            currentIndex++;
-        }
-        if (current && currentIndex == index) {
-            return current->value;
-        }
-        return "";
-    }
-
-    // Метод для печати всех элементов списка
-    void print() const {
-        Node* current = head;
-        while (current) {
-            cout << current->value << " ";
-            current = current->next;
-        }
-        cout << endl;
-    }
-
-    // Метод для удаления узла по значению
-    void remove_by_value(const string& value) {
-        if (!head) return;
-        Node* current = head;
-        while (current && current->value != value) {
-            current = current->next;
-        }
-        if (!current) return; // Значение не найдено
-
-        if (current->prev) {
-            current->prev->next = current->next;
-        } else {
-            head = current->next; // Удаляемый элемент — голова
-        }
-        if (current->next) {
-            current->next->prev = current->prev;
-        } else {
-            tail = current->prev; // Удаляемый элемент — хвост
-        }
-        delete current;
-    }
-
-    // Метод для поиска значения в списке
-    bool find_by_value(const string& value) const {
-        Node* current = head;
-        while (current) {
-            if (current->value == value) {
-                return true;
-            }
-            current = current->next;
-        }
-        return false;
-    }
-
-    ~DoublyLinkedList() { // Деструктор для очистки памяти
-        while (head) {
-            pop_front();
-        }
-    }
-};
 //Stack
 // Определяем шаблонную структуру для стека
 template <typename T>
@@ -736,13 +601,7 @@ struct NamedSet {  // для множества
 
     NamedSet(const string& n) : name(n), set(new Set()), next(nullptr) {}
 };
-struct NamedDoublyLinkedList {// для двухсвязного списка
-    string name;
-    DoublyLinkedList* list;
-    NamedDoublyLinkedList* next;
 
-    NamedDoublyLinkedList(const string& n) : name(n), list(new DoublyLinkedList()), next(nullptr) {}
-};
 struct NamedLinkedList {  // для односвязного списка
     string name;
     SinglyLinkedList* list;
@@ -906,41 +765,7 @@ struct NamedSetList {
         }
     }
 };
-// Структура для списка именованных двусвязных списков
-struct NamedDoublyLinkedListList {
-    NamedDoublyLinkedList* head;
 
-    NamedDoublyLinkedListList() : head(nullptr) {}
-
-    DoublyLinkedList* get(const string& name) const {
-        NamedDoublyLinkedList* current = head;
-        while (current) {
-            if (current->name == name) return current->list;
-            current = current->next;
-        }
-        return nullptr;
-    }
-
-    DoublyLinkedList* create(const string& name) {
-        DoublyLinkedList* existing = get(name);
-        if (existing) return existing;
-
-        NamedDoublyLinkedList* newNode = new NamedDoublyLinkedList(name);
-        newNode->next = head;
-        head = newNode;
-        return newNode->list;
-    }
-
-    ~NamedDoublyLinkedListList() {
-        NamedDoublyLinkedList* current = head;
-        while (current) {
-            NamedDoublyLinkedList* temp = current;
-            current = current->next;
-            delete temp->list;
-            delete temp;
-        }
-    }
-};
 // Структура для списка именованных односвязных списков
 struct NamedLinkedListList {
     NamedLinkedList* head;  // указатель на первый список в списке
@@ -1109,7 +934,6 @@ void process_query(const string& query,
                    NamedQueueList& queues,
                    NamedSetList& sets,
                    NamedLinkedListList& linked_lists,
-                   NamedDoublyLinkedList& linked_doublelists,
                    NamedDynamicArrayList& dynamic_arrays,
                    NamedCompleteBinaryTreeList& trees) {
     TokenArray tokens = tokenize(query);  // разбиваем запрос на токены
@@ -1156,11 +980,6 @@ void process_query(const string& query,
 
         // Проверка и вывод для односвязного списка
         SinglyLinkedList* list = linked_lists.get(structure_name);
-        if (list) {
-            list->print();
-            return;
-        }
-         NamedDoublyLinkedList* listdouble = linked_doublelists.get(structure_name);
         if (list) {
             list->print();
             return;
