@@ -1,0 +1,24 @@
+ ofs << "# DoublyLinkedLists\n";
+    NamedDoublyLinkedList* current_list = named_lists;
+
+    while (current_list) {
+        DoublyLinkedList* list = current_list->list;
+        DoublyLinkedList::Node* node = list->head;
+
+        // Сохраняем элементы списка с помощью LPUSH (обратный порядок)
+        // Используем временный стек для сохранения порядка
+        std::stack<std::string> temp_stack;
+        while (node) {
+            temp_stack.push(node->value);
+            node = node->next;
+        }
+
+        // Сохраняем элементы в обратном порядке
+        while (!temp_stack.empty()) {
+            std::string val = temp_stack.top();
+            temp_stack.pop();
+            ofs << "LPUSH " << current_list->name << " " << val << "\n";
+        }
+
+        current_list = current_list->next;
+    }
