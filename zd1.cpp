@@ -1994,9 +1994,14 @@ int n;
     // Обработка команды
     string name;
     int value, index;
-    if (query.substr(0, 2) == "LD") { // Список
+    if (query.substr(0, 2) == "LS") 
+    { // Список
+        LSprocessing(query, filename);
+    } 
+    else if (query.substr(0, 2) == "LD") { // Список
         LDprocessing(query, filename);
-    } else {
+        }
+        else {
         cout << "Ошибка, неизвестная принадлежность структуры данных!" << endl;
         return 1;
     }
